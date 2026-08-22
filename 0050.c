@@ -97,7 +97,7 @@ double dot(const Vector* a, const double x[])
     return sum;
 }
 
-/* ===== ニューラルネットワーク ===== */
+/* ===== パーセプトロン ===== */
 
 /* 推論 */
 int predict(const Perceptron* pNet, const double input[])
