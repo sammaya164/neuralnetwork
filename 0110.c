@@ -132,23 +132,6 @@ Vector matrix_get_row(const Matrix* pMatrix, int row)
 
 /* ===== 活性化関数 ===== */
 
-/* ステップ関数 */
-double step(double x)
-{
-    if (x >= 0)
-        return 1.0;
-    else
-        return 0.0;
-}
-
-
-/* ステップ関数の逆伝搬 */
-double step_backward(double y, double dy)
-{
-    return dy;
-}
-
-
 /* シグモイド関数 */
 double sigmoid(double x)
 {
