@@ -1,4 +1,4 @@
-/* C言語でニューラルネットワークを作る Lv.14 XORを学習する */
+/* C言語でニューラルネットワークを作る Lv.14 複数層のネットワークでXORを解く */
 
 #include <stdio.h>
 #include <stdlib.h>
