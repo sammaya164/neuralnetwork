@@ -539,10 +539,10 @@ ComputationGraph graph_create(Layer** layers, const int* input_nodes, int node_c
 void graph_destroy(ComputationGraph* pGraph)
 {
     for (int i = 0; i < pGraph->node_count; i++)
+    {
         vector_destroy(&pGraph->nodes[i].output);
-
-    for (int i = 0; i < pGraph->node_count + 1; i++)
         vector_destroy(&pGraph->nodes[i].gradient);
+    }
 
     free(pGraph->nodes);
     pGraph->nodes = NULL;
