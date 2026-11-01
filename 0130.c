@@ -169,7 +169,7 @@ double sigmoid_backward(double y, double dy)
         L = (1/2) * Σ(y - t)^2
 
         t : 正解値
-        y :  推論値
+        y : 推論値
 */
 double sse(const Vector* pY, const Vector* pT)
 {
@@ -191,7 +191,7 @@ double sse(const Vector* pY, const Vector* pT)
         dL/dy = y - t
 
         t : 正解値
-        y :  推論値
+        y : 推論値
 */
 void sse_derivative(const Vector* pY, const Vector* pT, Vector* pDy)
 {
@@ -310,7 +310,7 @@ typedef struct
     /* 出力を保持 */
     Vector output;
 
-    /*  Forward用の関数ポインタ */
+    /* Forward用の関数ポインタ */
     ActivationForward forward;
 
     /* Backward用の関数ポインタ */
