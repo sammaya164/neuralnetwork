@@ -576,7 +576,6 @@ typedef struct
 {
     GraphNode* nodes;
     int node_count;
-    int input_count;
 
 } ComputationGraph;
 
@@ -592,7 +591,6 @@ ComputationGraph graph_create(const GraphNodeSpec* specs, int node_count)
         fprintf(stderr, "Memory allocation failed in graph_create.\n");
     
     graph.node_count = node_count;
-    graph.input_count = 0;
 
     for (int i = 0; i < node_count; i++)
     {
@@ -604,9 +602,6 @@ ComputationGraph graph_create(const GraphNodeSpec* specs, int node_count)
         pNode->input_index = specs[i].input_index;
         pNode->output_size = specs[i].output_size;
         
-        if(pNode->type == GRAPH_NODE_INPUT)
-            graph.input_count++;
-
         if(pNode->input_count > 0)
             pNode->input_nodes = calloc(pNode->input_count, sizeof(int));
 
@@ -734,6 +729,25 @@ void graph_backward(ComputationGraph* pGraph, Vector* pDy)
 }
 
 
+/* 外部入力ノードの数を取得 */
+int graph_get_input_count(ComputationGraph* pGraph)
+{
+    int max_index = 0;
+
+    for(int i = 0; i < pGraph->node_count; i ++)
+    {
+
+        GraphNode* pNode = &pGraph->nodes[i];
+
+        if(pNode->type == GRAPH_NODE_INPUT)
+            if (max_index < pNode->input_index)
+                max_index = pNode->input_index;
+    }
+
+    return max_index + 1;
+}
+
+
 /* Update */
 void graph_update(ComputationGraph* pGraph, double lr)
 {
@@ -746,7 +760,7 @@ void graph_update(ComputationGraph* pGraph, double lr)
 
 void train(ComputationGraph* pNet, const Matrix x[], const Matrix* pT, double lr, int epoch)
 {
-    int input_count = pNet->input_count;
+    int input_count = graph_get_input_count(pNet);
     int output_size = pNet->nodes[pNet->node_count - 1].output_size;
 
     for (int e = 0; e < epoch; e++)
@@ -807,9 +821,9 @@ void vector_print(const Vector* pVector)
 }
 
 
-void show_result(ComputationGraph* pNet, Matrix x[], Matrix* pT)
+void show_result(ComputationGraph* pNet, Matrix x[], const Matrix* pT)
 {
-    int input_count = pNet->input_count;
+    int input_count = graph_get_input_count(pNet);
     int output_size = pNet->nodes[pNet->node_count - 1].output_size;
 
     for(int r = 0; r < pT->rows; r++)
@@ -856,7 +870,7 @@ int main(void)
 {
     srand(1);
 
-    /* 入力データ（XRDゲート） */
+    /* 入力データ（XORゲート） */
     double data_x[][2] = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
     Matrix x[1];
     x[0] = matrix_create(4, 2);
@@ -865,7 +879,7 @@ int main(void)
         for(int j = 0; j < x[0].cols; j++)
             matrix_set(&x[0], i, j, data_x[i][j]);
 
-    /* 教師データ（XRDゲート） */
+    /* 教師データ（XORゲート） */
     double data_t[][1] = {{0}, {1}, {1}, {0}};
     
     Matrix t = matrix_create(4, 1);
