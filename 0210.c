@@ -596,9 +596,6 @@ typedef struct
     /* 入力元ノードの配列 */
     const int* input_nodes;
 
-    /* 入力元の数 */
-    int input_count;
-
     /* 外部入力の番号 */
     int input_index;
 
@@ -619,9 +616,6 @@ typedef struct
 
     /* 入力元ノードの配列 */
     int* input_nodes;
-
-    /* 入力元の数 */
-    int input_count;
 
     /* 外部入力の番号 */
     int input_index;
@@ -663,28 +657,46 @@ ComputationGraph graph_create(const GraphNodeSpec* specs, int node_count)
     for (int i = 0; i < node_count; i++)
     {
         GraphNode* pNode = &graph.nodes[i];
-
+        
         pNode->type = specs[i].type;
         pNode->transform = specs[i].transform;
-        pNode->input_count = specs[i].input_count;
         pNode->input_index = specs[i].input_index;
         pNode->output_size = specs[i].output_size;
-        
-        if(pNode->type == GRAPH_NODE_INPUT)
-            if(pNode->input_index > max_input_index)
-                max_input_index = pNode->input_index;
 
-        if(pNode->input_count > 0)
+        switch(pNode->type)
         {
-            pNode->input_nodes = calloc(pNode->input_count, sizeof(int));
-            if(pNode->input_nodes == NULL)
-                fprintf(stderr, "Memory allocation failed in graph_create.\n");
-        }
-        else
-            pNode->input_nodes = NULL;
+            case GRAPH_NODE_TRANSFORM:
+            {
+                int input_count = pNode->transform->input_count;
+                //GRAPH_NODE_INPUTではtransform == NULLなので場合分けが必要
 
-        for(int j = 0; j < pNode->input_count; j++)
-            pNode->input_nodes[j] = specs[i].input_nodes[j];
+                if(input_count > 0)
+                {
+                    pNode->input_nodes = calloc(input_count, sizeof(int));
+
+                    if(pNode->input_nodes == NULL)
+                        fprintf(stderr, "Memory allocation failed in graph_create.\n");
+
+                    for(int j = 0; j < input_count; j++)
+                        pNode->input_nodes[j] = specs[i].input_nodes[j];
+                }
+                else
+                {
+                    pNode->input_nodes = NULL;
+                }
+
+                break;
+            }
+            case GRAPH_NODE_INPUT:
+            {
+                pNode->input_nodes = NULL;
+
+                if(pNode->input_index > max_input_index)
+                    max_input_index = pNode->input_index;
+
+                break;
+            }
+        }
         
         pNode->output = vector_create(pNode->output_size);
         pNode->gradient = vector_create(pNode->output_size);
@@ -702,7 +714,7 @@ void graph_destroy(ComputationGraph* graph)
     {
         GraphNode* pNode = &graph->nodes[i];
 
-        if(pNode->input_count > 0)
+        if(pNode->transform->input_count > 0)
         {
             free(pNode->input_nodes);
             pNode->input_nodes = NULL;
@@ -733,9 +745,9 @@ void graph_forward(
         else
         {
             /* Transformへの入力を集める */
-            const Vector* transform_inputs[pNode->input_count]; //C99以降で使える可変長配列
+            const Vector* transform_inputs[pNode->transform->input_count]; //C99以降で使える可変長配列
 
-            for(int j = 0; j < pNode->input_count; j++)
+            for(int j = 0; j < pNode->transform->input_count; j++)
             {
                 GraphNode* pParent = &graph->nodes[pNode->input_nodes[j]];
 
@@ -771,7 +783,7 @@ void graph_backward(ComputationGraph* graph, Vector* doutput)
         if(pNode->type == GRAPH_NODE_INPUT)
             continue;
 
-        int num = pNode->input_count;
+        int num = pNode->transform->input_count;
 
         const Vector* transform_inputs[num]; //C99以降で使える可変長配列×3行
         Vector dinputs[num];
@@ -979,7 +991,6 @@ int main(void)
             NULL,
             NULL,
             0,
-            0,
             2
         },
 
@@ -988,7 +999,6 @@ int main(void)
             GRAPH_NODE_TRANSFORM, 
             &linear_transform1,
             node_inputs1,
-            1,
             -1,
             3
         },
@@ -998,7 +1008,6 @@ int main(void)
             GRAPH_NODE_TRANSFORM,
             &act_transform1,
             node_inputs2,
-            1,
             -1,
             3
         },
@@ -1008,7 +1017,6 @@ int main(void)
             GRAPH_NODE_TRANSFORM,
             &linear_transform2,
             node_inputs3,
-            1,
             -1,
             1
         },
@@ -1018,7 +1026,6 @@ int main(void)
             GRAPH_NODE_TRANSFORM,
             &act_transform2,
             node_inputs4,
-            1,
             -1,
             1
         }
