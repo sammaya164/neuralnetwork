@@ -169,7 +169,7 @@ double sigmoid_backward(double y, double dy)
         L = (1/2) * Σ(y - t)^2
 
         t : 正解値
-        y :  推論値
+        y : 推論値
 */
 double sse(const Vector* pY, const Vector* pT)
 {
@@ -191,7 +191,7 @@ double sse(const Vector* pY, const Vector* pT)
         dL/dy = y - t
 
         t : 正解値
-        y :  推論値
+        y : 推論値
 */
 void sse_derivative(const Vector* pY, const Vector* pT, Vector* pDy)
 {
@@ -331,7 +331,7 @@ typedef struct
     /* 出力を保持 */
     Vector output;
 
-    /*  Forward用の関数ポインタ */
+    /* Forward用の関数ポインタ */
     ActivationForward forward;
 
     /* Backward用の関数ポインタ */
@@ -378,7 +378,7 @@ void activation_backward(const Activation* pAct,  const Vector* pDoutput, Vector
         pDinput->data[i] = pAct->backward(pAct->output.data[i], pDoutput->data[i]);
 }
 
-/* ===== Network ===== */
+/* ===== ニューラルネットワーク ===== */
 
 /* 推論 */
 void predict(Linear* pLinear1, Activation* pAct1, Linear* pLinear2, Activation* pAct2,
@@ -486,7 +486,7 @@ int main(void)
 {
     srand(1);
 
-    /* 入力データ（XRDゲート） */
+    /* 入力データ（XORゲート） */
     double data_x[][2] = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
     
     Matrix x = matrix_create(4, 2);
@@ -497,7 +497,7 @@ int main(void)
         matrix_set(&x, i, j, data_x[i][j]);
     }
 
-    /* 教師データ（XRDゲート） */
+    /* 教師データ（XORゲート） */
     double data_t[][1] = {{0}, {1}, {1}, {0}};
     
     Matrix t = matrix_create(4, 1);
